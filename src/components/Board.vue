@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, reactive, ref, type Ref } from 'vue';
-import { GetBehavior } from '../chess/pieceBehavior.ts';
-import { Board, Color, type Position, GetColor, getPosition } from '../chess/generalTerms.ts';
+import { computed, ref, watch, type Ref } from 'vue';
+import { GetBehavior } from '../chess/pieceBehavior';
+import { Board, Color, type Position, GetColor, getPosition } from '../chess/generalTerms';
 import { GetTargetPos, type Move } from '@/chess/move';
 
 const board = ref(Board.Default);
@@ -10,19 +10,34 @@ const turnPlayer = ref(Color.White);
 
 const selected: Ref<null | Position> = ref(null);
 
+const allAvailableMoves = computed(() => {
+	const obj: { [pos: number]: Move[] } = {};
+	const b = board.value as Board;
+	const activePlayer = turnPlayer.value;
+	for (let i = 0; i < 64; ++i) {
+		const val = b.get(i);
+		if (val === 0 || GetColor(val) !== activePlayer) continue;
+		const attacks = GetBehavior(val)
+			.getAttackedFields(val, i, b)
+			.filter((x: Move) => !b.applyMove(x).isCheck(turnPlayer.value));
+		if (attacks.length === 0) continue;
+		obj[i] = attacks;
+	}
+	return obj;
+});
+
+watch(allAvailableMoves, (moves) => {
+	console.log(moves);
+	if (Object.keys(moves).length === 0) {
+		console.log('Checkmate!');
+	}
+});
+
 const availableMoves = computed(() => {
 	const sel = selected.value;
 	if (sel === null) return [];
-	const b = board.value as Board;
-	const field = b.get(sel);
-	return GetBehavior(field)
-		.getAttackedFields(field, sel, b)
-		.filter((x: Move) => !b.applyMove(x).isCheck(turnPlayer.value));
+	return allAvailableMoves.value[sel] ?? [];
 });
-
-function translateFile(i: number) {
-	return String.fromCharCode('a'.charCodeAt(0) + i - 1);
-}
 
 function CellString(x: number, y: number) {
 	const field = board.value.getAt(x, y);
@@ -85,7 +100,7 @@ function TestCheckmate() {}
 	<p>{{ turnPlayer === Color.White ? 'White' : 'Black' }} to move</p>
 	<div class="board">
 		<template v-for="rankInv in 8">
-			<template v-for="file in 8" :key="`${rank}_${file}`">
+			<template v-for="file in 8" :key="`${rankInv}_${file}`">
 				<div
 					:class="CellClasses(file - 1, 8 - rankInv)"
 					@click="CellClick(file - 1, 8 - rankInv)"
