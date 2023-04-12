@@ -8,6 +8,8 @@ import {
 	getPosition,
 	PIECE_MASK,
 	GetColor,
+	getKnightMoves,
+	getKingMoves,
 } from './generalTerms';
 import { EncodeMove, MoveType, type Move } from './move';
 
@@ -37,7 +39,7 @@ export const Pawn: PieceBehavior = {
 		const homeRank = color & Color.Black ? 6 : 1;
 		const dir = color & Color.Black ? -1 : 1;
 		const enemy = color & Color.Black ? Color.White : Color.Black;
-		if (y === homeRank)
+		if (y === homeRank && board.getAt(x, y + dir) === 0)
 			TestMove(attackAble, pos, getPosition(x, homeRank + dir * 2), board, 0 as Color);
 		TestMove(attackAble, pos, getPosition(x, y + dir), board, 0 as Color);
 		TestMove(attackAble, pos, getPosition(x - 1, y + dir), board, enemy);
@@ -67,7 +69,19 @@ export const Rook: PieceBehavior = {
 
 export const Knight: PieceBehavior = {
 	getAttackedFields(color, pos, board) {
-		return [];
+		color = GetColor(color);
+		return getKnightMoves(pos)
+			.map((kPos) => {
+				const val = board.get(kPos);
+				if (val === 0) {
+					return EncodeMove(pos, kPos, MoveType.Move);
+				} else if (GetColor(val) !== color) {
+					return EncodeMove(pos, kPos, MoveType.Capture);
+				} else {
+					return 0;
+				}
+			})
+			.filter((x) => x !== 0);
 	},
 	getDisplayString: function (color: Color) {
 		return color & Color.White ? '♘' : '♞';
@@ -112,7 +126,19 @@ export const Queen: PieceBehavior = {
 
 export const King: PieceBehavior = {
 	getAttackedFields(color, pos, board) {
-		return [];
+		color = GetColor(color);
+		return getKingMoves(pos)
+			.map((kPos) => {
+				const val = board.get(kPos);
+				if (val === 0) {
+					return EncodeMove(pos, kPos, MoveType.Move);
+				} else if (GetColor(val) !== color) {
+					return EncodeMove(pos, kPos, MoveType.Capture);
+				} else {
+					return 0;
+				}
+			})
+			.filter((x) => x !== 0);
 	},
 	getDisplayString: function (color: Color) {
 		return color & Color.White ? '♔' : '♚';
@@ -151,7 +177,6 @@ function ScanInDirection(
 ) {
 	const [x, y] = splitPosition(pos);
 	const rColor = GetColor(color);
-	let i = 0;
 
 	let tx = x + dx;
 	let ty = y + dy;

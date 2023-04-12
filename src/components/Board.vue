@@ -13,8 +13,11 @@ const selected: Ref<null | Position> = ref(null);
 const availableMoves = computed(() => {
 	const sel = selected.value;
 	if (!sel) return [];
-	const field = board.value.get(sel);
-	return GetBehavior(field).getAttackedFields(field, sel, board.value as Board);
+	const b = board.value as Board;
+	const field = b.get(sel);
+	return GetBehavior(field)
+		.getAttackedFields(field, sel, b)
+		.filter((x: Move) => !b.applyMove(x).isCheck(turnPlayer.value));
 });
 
 function translateFile(i: number) {
@@ -125,6 +128,7 @@ p {
 	align-items: center;
 	justify-content: center;
 	user-select: none;
+	-webkit-user-select: none;
 }
 
 .board div.white-piece span {

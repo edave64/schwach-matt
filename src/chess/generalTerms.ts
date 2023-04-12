@@ -22,7 +22,7 @@ export const COLOR_MASK = 0b11000000;
 export const PIECE_MASK = 0b00111111;
 
 export class Board {
-	public static Default = (() => {
+	public static Default: Board = (() => {
 		const p = Piece.Pawn;
 		const r = Piece.Rook;
 		const k = Piece.Knight;
@@ -84,9 +84,11 @@ export class Board {
 		myColor = GetColor(myColor);
 		// The direction the enemy pawns will come from.
 		const enemyColor = myColor === Color.White ? Color.Black : Color.White;
-		const enemyDir = myColor === Color.White ? -1 : 1;
+		const enemyDir = myColor === Color.White ? 1 : -1;
 		const attackingKnight = enemyColor | Piece.Knight;
 		if (getKnightMoves(pos).some((x) => this._state[x] === attackingKnight)) return true;
+		const attackingKing = enemyColor | Piece.King;
+		if (getKingMoves(pos).some((x) => this._state[x] === attackingKing)) return true;
 
 		// Our system encoding makes checking for any amount of pieces equally fast, so it use that as an early exit
 		// for close attacking queens and bishops, too.
@@ -103,12 +105,15 @@ export class Board {
 		)
 			return true;
 
-		return this.scanDirForAttack(
-			pos,
-			-1,
-			-1,
-			Piece.Bishop | Piece.Queen | enemyColor,
-			enemyColor
+		return (
+			this.scanDirForAttack(pos, -1, -1, Piece.Bishop | Piece.Queen, enemyColor) ||
+			this.scanDirForAttack(pos, 1, -1, Piece.Bishop | Piece.Queen, enemyColor) ||
+			this.scanDirForAttack(pos, -1, 1, Piece.Bishop | Piece.Queen, enemyColor) ||
+			this.scanDirForAttack(pos, 1, 1, Piece.Bishop | Piece.Queen, enemyColor) ||
+			this.scanDirForAttack(pos, -1, 0, Piece.Rook | Piece.Queen, enemyColor) ||
+			this.scanDirForAttack(pos, 1, 0, Piece.Rook | Piece.Queen, enemyColor) ||
+			this.scanDirForAttack(pos, 0, -1, Piece.Rook | Piece.Queen, enemyColor) ||
+			this.scanDirForAttack(pos, 0, 1, Piece.Rook | Piece.Queen, enemyColor)
 		);
 	}
 
@@ -119,11 +124,26 @@ export class Board {
 		pieceMatcher: number,
 		enemyColor: Color
 	): boolean {
-		return true;
+		enemyColor = GetColor(enemyColor);
+		const [x, y] = splitPosition(pos);
+
+		let tx = x + dx;
+		let ty = y + dy;
+
+		while (tx >= 0 && tx <= 7 && ty >= 0 && ty <= 7) {
+			const tPos = getPosition(tx, ty);
+			const target = this.get(tPos);
+			if (target !== 0) {
+				return enemyColor === GetColor(target) && (target & pieceMatcher) !== 0;
+			}
+			tx += dx;
+			ty += dy;
+		}
+		return false;
 	}
 }
 
-function getKnightMoves(pos: Position): Position[] {
+export function getKnightMoves(pos: Position): Position[] {
 	const [x, y] = splitPosition(pos);
 	return [
 		[-1, -2],
@@ -134,6 +154,23 @@ function getKnightMoves(pos: Position): Position[] {
 		[2, -1],
 		[1, 2],
 		[2, 1],
+	]
+		.map(([dx, dy]) => [dx + x, dy + y])
+		.filter(([nx, ny]) => nx >= 0 && nx <= 7 && ny >= 0 && ny <= 7)
+		.map(([nx, ny]) => getPosition(nx, ny));
+}
+
+export function getKingMoves(pos: Position): Position[] {
+	const [x, y] = splitPosition(pos);
+	return [
+		[-1, -1],
+		[-1, 0],
+		[-1, 1],
+		[0, -1],
+		[0, 1],
+		[1, -1],
+		[1, 0],
+		[1, -1],
 	]
 		.map(([dx, dy]) => [dx + x, dy + y])
 		.filter(([nx, ny]) => nx >= 0 && nx <= 7 && ny >= 0 && ny <= 7)
