@@ -12,7 +12,7 @@ const selected: Ref<null | Position> = ref(null);
 
 const availableMoves = computed(() => {
 	const sel = selected.value;
-	if (!sel) return [];
+	if (sel === null) return [];
 	const b = board.value as Board;
 	const field = b.get(sel);
 	return GetBehavior(field)
@@ -50,7 +50,7 @@ function CellClasses(x: number, y: number) {
 function CellClick(x: number, y: number) {
 	const oldPos = selected.value;
 	const pos = getPosition(x, y);
-	if (oldPos) {
+	if (oldPos !== null) {
 		const oldPiece = board.value.get(oldPos);
 		const newPiece = board.value.get(pos);
 		if (GetColor(oldPiece) === GetColor(newPiece)) {
