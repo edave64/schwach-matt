@@ -26,11 +26,8 @@ const allAvailableMoves = computed(() => {
 	return obj;
 });
 
-watch(allAvailableMoves, (moves) => {
-	console.log(moves);
-	if (Object.keys(moves).length === 0) {
-		console.log('Checkmate!');
-	}
+const checkmate = computed(() => {
+	return Object.keys(allAvailableMoves.value).length === 0;
 });
 
 const availableMoves = computed(() => {
@@ -97,7 +94,9 @@ function TestCheckmate() {}
 </script>
 
 <template>
-	<p>{{ turnPlayer === Color.White ? 'White' : 'Black' }} to move</p>
+	<p class="info" v-if="!checkmate">
+		{{ turnPlayer === Color.White ? 'White' : 'Black' }} to move
+	</p>
 	<div class="board">
 		<template v-for="rankInv in 8">
 			<template v-for="file in 8" :key="`${rankInv}_${file}`">
@@ -109,11 +108,16 @@ function TestCheckmate() {}
 				</div>
 			</template>
 		</template>
+		<div class="checkmate" v-if="checkmate">
+			<h2>Checkmate</h2>
+			<p>{{ turnPlayer === Color.White ? 'Black' : 'White' }} has won.</p>
+		</div>
 	</div>
 </template>
 
 <style scoped>
 .board {
+	position: relative;
 	width: 90vmin; /* Set the width to 50% of the viewport width */
 	height: 90vmin; /* Set the height to 50% of the viewport width */
 	max-width: 90vh; /* Set the maximum width to 90% of the viewport height */
@@ -131,14 +135,14 @@ function TestCheckmate() {}
 	box-shadow: 0px 0px 16px 4px gray;
 }
 
-p {
+p.info {
 	color: white;
 	position: absolute;
 	top: 0;
 	left: 0;
 }
 
-.board div {
+.board div:not(.checkmate) {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -170,5 +174,19 @@ p {
 
 .board .dark {
 	background-color: var(--board-color-2);
+}
+
+.checkmate {
+	background: rgba(0, 0, 0, 0.5);
+	color: red;
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+.checkmate * {
+	filter: drop-shadow(0px 0px 4px #000);
 }
 </style>
