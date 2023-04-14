@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch, type Ref } from 'vue';
+import { computed, ref, type Ref } from 'vue';
 import { GetBehavior } from '../chess/pieceBehavior';
 import { Board, Color, type Position, GetColor, getPosition } from '../chess/generalTerms';
 import { GetTargetPos, type Move } from '@/chess/move';
+import Cell from '@/components/Cell.vue';
 
-const board = ref(Board.Default);
+const board = ref(Board.Default) as Ref<Board>;
 
 const turnPlayer = ref(Color.White);
 
@@ -59,7 +60,8 @@ function CellClasses(x: number, y: number) {
 	};
 }
 
-function CellClick(x: number, y: number) {
+function CellClick([x, y]: [number, number]) {
+	if (checkmate.value) return;
 	const oldPos = selected.value;
 	const pos = getPosition(x, y);
 	if (oldPos !== null) {
@@ -100,12 +102,14 @@ function TestCheckmate() {}
 	<div class="board">
 		<template v-for="rankInv in 8">
 			<template v-for="file in 8" :key="`${rankInv}_${file}`">
-				<div
-					:class="CellClasses(file - 1, 8 - rankInv)"
-					@click="CellClick(file - 1, 8 - rankInv)"
-				>
-					<span>{{ CellString(file - 1, 8 - rankInv) }}</span>
-				</div>
+				<Cell
+					:x="file - 1"
+					:y="8 - rankInv"
+					:selected="selected"
+					:board="board"
+					:availableMoves="availableMoves"
+					@choose="CellClick"
+				/>
 			</template>
 		</template>
 		<div class="checkmate" v-if="checkmate">
@@ -140,40 +144,6 @@ p.info {
 	position: absolute;
 	top: 0;
 	left: 0;
-}
-
-.board div:not(.checkmate) {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	user-select: none;
-	-webkit-user-select: none;
-}
-
-.board div.white-piece span {
-	filter: drop-shadow(0px 0px 2px #000);
-	color: #fff;
-}
-
-.board div.black-piece span {
-	filter: drop-shadow(0px 0px 2px #fff);
-	color: #000;
-}
-
-.board div.selected {
-	background: green;
-}
-
-.board div.attacked {
-	background: black;
-}
-
-.board .light {
-	background-color: var(--board-color-1);
-}
-
-.board .dark {
-	background-color: var(--board-color-2);
 }
 
 .checkmate {

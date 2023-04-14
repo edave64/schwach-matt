@@ -1,14 +1,8 @@
 <script setup lang="ts">
-import { reactive, ref, type Ref } from 'vue';
-import { GetBehavior } from '../chess/pieceBehavior.ts';
-import {
-	Piece,
-	Board,
-	Color,
-	type Position,
-	GetColor,
-	getPosition,
-} from '../chess/generalTerms.ts';
+import { computed, type PropType } from 'vue';
+import { GetBehavior } from '../chess/pieceBehavior';
+import { Board, Color, type Position, getPosition } from '../chess/generalTerms';
+import { GetTargetPos, type Move } from '@/chess/move';
 
 const params = defineProps({
 	x: {
@@ -23,8 +17,12 @@ const params = defineProps({
 		val: null as null | Position,
 		required: true,
 	},
-	fieldValue: {
-		type: Number,
+	board: {
+		type: Object as PropType<Board>,
+		required: true,
+	},
+	availableMoves: {
+		type: Array as PropType<Move[]>,
 		required: true,
 	},
 });
@@ -35,21 +33,27 @@ function translateFile(i: number) {
 	return String.fromCharCode('a'.charCodeAt(0) + i - 1);
 }
 
+const pos = computed(() => getPosition(params.x, params.y));
+
 function CellString() {
-	const piece = GetBehavior(params.fieldValue);
-	return piece.getDisplayString(params.fieldValue);
+	const val = params.board.get(pos.value);
+	return GetBehavior(val).getDisplayString(val);
 }
 
 function CellClasses() {
 	const color = (params.x + params.y) % 2 ? 'light' : 'dark';
 	const selectPos = params.selected;
 	const pos = getPosition(params.x, params.y);
-	const piece = board.get(pos);
+	const piece = params.board.get(pos);
 	const pieceColor = piece === 0 ? 'empty' : piece & Color.Black ? 'black-piece' : 'white-piece';
+
+	const attacked = params.availableMoves.some((x) => GetTargetPos(x) === pos);
+
 	return {
 		[color]: true,
 		[pieceColor]: true,
 		selected: selectPos !== null && selectPos === pos,
+		attacked,
 	};
 }
 </script>
@@ -61,57 +65,37 @@ function CellClasses() {
 </template>
 
 <style scoped>
-.board {
-	width: 90vmin; /* Set the width to 50% of the viewport width */
-	height: 90vmin; /* Set the height to 50% of the viewport width */
-	max-width: 90vh; /* Set the maximum width to 90% of the viewport height */
-	max-height: 90vh; /* Set the maximum height to 90% of the viewport height */
-	font-size: 5vmin;
-	background-color: #ccc; /* Set a background color for the square */
-	display: grid;
-	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-	gap: 0px 0px;
-	max-height: 100%;
-	--board-color-1: rgb(237, 238, 209);
-	--board-color-2: rgb(119, 153, 82);
-
-	box-shadow: 0px 0px 16px 4px gray;
-}
-
-p {
-	color: white;
-	position: absolute;
-	top: 0;
-	left: 0;
-}
-
-.board div {
+div {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	user-select: none;
+	-webkit-user-select: none;
 }
 
-.board div.white-piece span {
+div.white-piece span {
 	filter: drop-shadow(0px 0px 2px #000);
 	color: #fff;
 }
 
-.board div.black-piece span {
+div.black-piece span {
 	filter: drop-shadow(0px 0px 2px #fff);
 	color: #000;
 }
 
-.board div.selected {
+div.selected {
 	background: green;
 }
 
-.board .light {
+div.attacked {
+	background: black;
+}
+
+.light {
 	background-color: var(--board-color-1);
 }
 
-.board .dark {
+.dark {
 	background-color: var(--board-color-2);
 }
 </style>
