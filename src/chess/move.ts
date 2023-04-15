@@ -1,4 +1,4 @@
-import { getPosition, splitPosition, type Position } from './generalTerms';
+import type { Position } from './generalTerms';
 
 export enum MoveType {
 	Move = 0b0001,
@@ -45,15 +45,4 @@ export function DecodeMove(code: Move): [Position, Position, MoveType, Promotion
 	const moveType = code & 0x0000000f;
 	const promotionType = code & 0x000000f0;
 	return [GetSourcePos(code), GetTargetPos(code), moveType, promotionType];
-}
-
-export function AsSAN(code: Move) {
-	const [from, to, type, promotion] = DecodeMove(code);
-}
-
-const aChr = 'a'.codePointAt(0)!;
-
-export function PosAsSAN(pos: Position) {
-	const [x, y] = splitPosition(pos);
-	return String.fromCodePoint(aChr + x) + (y + 1);
 }

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue';
-import BoardVue from '../components/Board.vue';
+import ChessBoard from '../components/ChessBoard.vue';
 </script>
 
 <template>
 	<main>
-		<BoardVue />
+		<chess-board />
 	</main>
 </template>
 

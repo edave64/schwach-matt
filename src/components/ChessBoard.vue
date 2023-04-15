@@ -3,7 +3,7 @@ import { computed, ref, type Ref } from 'vue';
 import { GetBehavior } from '../chess/pieceBehavior';
 import { Board, Color, type Position, GetColor, getPosition } from '../chess/generalTerms';
 import { GetTargetPos, type Move } from '@/chess/move';
-import Cell from '@/components/Cell.vue';
+import BoardCell from '@/components/BoardCell.vue';
 
 const board = ref(Board.Default) as Ref<Board>;
 
@@ -37,29 +37,6 @@ const availableMoves = computed(() => {
 	return allAvailableMoves.value[sel] ?? [];
 });
 
-function CellString(x: number, y: number) {
-	const field = board.value.getAt(x, y);
-	const piece = GetBehavior(field);
-	return piece.getDisplayString(field);
-}
-
-function CellClasses(x: number, y: number) {
-	const color = (x + y) % 2 ? 'light' : 'dark';
-	const selectPos = selected.value;
-	const pos = getPosition(x, y);
-	const piece = board.value.get(pos);
-	const pieceColor = piece === 0 ? 'empty' : piece & Color.Black ? 'black-piece' : 'white-piece';
-
-	const attacked = availableMoves.value.some((x) => GetTargetPos(x) === pos);
-
-	return {
-		[color]: true,
-		[pieceColor]: true,
-		selected: selectPos !== null && selectPos === pos,
-		attacked,
-	};
-}
-
 function CellClick([x, y]: [number, number]) {
 	if (checkmate.value) return;
 	const oldPos = selected.value;
@@ -91,8 +68,6 @@ function ApplyTurn(move: Move) {
 		turnPlayer.value = Color.White;
 	}
 }
-
-function TestCheckmate() {}
 </script>
 
 <template>
@@ -102,7 +77,7 @@ function TestCheckmate() {}
 	<div class="board">
 		<template v-for="rankInv in 8">
 			<template v-for="file in 8" :key="`${rankInv}_${file}`">
-				<Cell
+				<board-cell
 					:x="file - 1"
 					:y="8 - rankInv"
 					:selected="selected"

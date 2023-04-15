@@ -29,10 +29,6 @@ const params = defineProps({
 
 const emit = defineEmits(['choose']);
 
-function translateFile(i: number) {
-	return String.fromCharCode('a'.charCodeAt(0) + i - 1);
-}
-
 const pos = computed(() => getPosition(params.x, params.y));
 
 function CellString() {
@@ -66,6 +62,7 @@ function CellClasses() {
 
 <style scoped>
 div {
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -73,22 +70,38 @@ div {
 	-webkit-user-select: none;
 }
 
-div.white-piece span {
+div:not(.empty) {
+	cursor: grab;
+}
+
+div span {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.white-piece span {
 	filter: drop-shadow(0px 0px 2px #000);
 	color: #fff;
 }
 
-div.black-piece span {
+.black-piece span {
 	filter: drop-shadow(0px 0px 2px #fff);
 	color: #000;
 }
 
-div.selected {
+.selected {
 	background: green;
 }
 
-div.attacked {
-	background: black;
+.attacked::before {
+	position: absolute;
+	content: '🔴';
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.attacked.empty::before {
+	content: '🟡';
 }
 
 .light {

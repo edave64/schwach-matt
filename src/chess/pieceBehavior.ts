@@ -146,10 +146,10 @@ export const King: PieceBehavior = {
 };
 
 export const NonePiece: PieceBehavior = {
-	getAttackedFields(color, pos, board) {
+	getAttackedFields() {
 		return [];
 	},
-	getDisplayString: function (color: Color) {
+	getDisplayString() {
 		return '';
 	},
 };
