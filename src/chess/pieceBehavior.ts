@@ -42,8 +42,8 @@ export const Pawn: PieceBehavior = {
 		if (y === homeRank && board.getAt(x, y + dir) === 0)
 			TestMove(attackAble, pos, getPosition(x, homeRank + dir * 2), board, 0 as Color);
 		TestMove(attackAble, pos, getPosition(x, y + dir), board, 0 as Color);
-		TestMove(attackAble, pos, getPosition(x - 1, y + dir), board, enemy);
-		TestMove(attackAble, pos, getPosition(x + 1, y + dir), board, enemy);
+		if (x > 0) TestMove(attackAble, pos, getPosition(x - 1, y + dir), board, enemy);
+		if (x < 7) TestMove(attackAble, pos, getPosition(x + 1, y + dir), board, enemy);
 		return attackAble;
 	},
 	getDisplayString: function (color: Color) {
