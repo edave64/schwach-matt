@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, type Ref } from 'vue';
 import { GetBehavior } from '../chess/pieceBehavior';
-import { Board, Color, type Position, GetColor, getPosition } from '../chess/generalTerms';
+import { Color, type Position, GetColor, getPosition } from '../chess/generalTerms';
 import { GetTargetPos, type Move } from '@/chess/move';
 import BoardCell from '@/components/BoardCell.vue';
+import { Board } from '@/chess/board';
 
 const board = ref(Board.Default) as Ref<Board>;
 

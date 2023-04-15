@@ -3,7 +3,6 @@ import {
 	Color,
 	type Field,
 	type Position,
-	type Board,
 	splitPosition,
 	getPosition,
 	PIECE_MASK,
@@ -11,6 +10,7 @@ import {
 	getKnightMoves,
 	getKingMoves,
 } from './generalTerms';
+import type { Board } from './board';
 import { EncodeMove, MoveType, type Move } from './move';
 
 export function GetBehavior(field: Field): PieceBehavior {

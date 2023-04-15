@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, type PropType } from 'vue';
 import { GetBehavior } from '../chess/pieceBehavior';
-import { Board, Color, type Position, getPosition } from '../chess/generalTerms';
+import { Color, type Position, getPosition } from '../chess/generalTerms';
 import { GetTargetPos, type Move } from '@/chess/move';
+import type { Board } from '@/chess/board';
 
 const params = defineProps({
 	x: {
