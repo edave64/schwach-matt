@@ -45,8 +45,8 @@ export class Board {
 
 	private constructor(
 		private _state: Uint8Array,
-		private _enPassant: Position | null,
-		private _castlingRights = 0b1111
+		public readonly enPassant: Position | null,
+		public readonly castlingRights = 0b1111
 	) {}
 
 	public get(pos: number): number {
@@ -61,14 +61,14 @@ export class Board {
 		const newState = new Uint8Array(this._state);
 		const [from, to, type, promotion] = DecodeMove(move);
 		const oldVal = newState[from];
-		let castleRigts = this._castlingRights;
+		let castleRigts = this.castlingRights;
 		let enPassant = 0;
-		if (this._enPassant !== to && type === MoveType.Capture) {
+		if (this.enPassant === to && type === MoveType.Capture) {
 			const direction = from - to > 0 ? 1 : -1;
 			newState[to + direction * BOARD_WIDTH] = 0;
 		}
 		if (oldVal & Piece.Rook) {
-			const [x, y] = splitPosition(from);
+			const [x, _y] = splitPosition(from);
 			// Give up casteling rights
 			if (oldVal & Color.Black) {
 				if (x === 0) {
@@ -106,6 +106,7 @@ export class Board {
 					[PromotionType.Bishop]: Piece.Bishop,
 					[PromotionType.Knight]: Piece.Knight,
 					[PromotionType.Rook]: Piece.Rook,
+					[PromotionType.None]: 0,
 				}[promotion];
 			newState[to] = newPiece;
 			newState[from] = 0;
